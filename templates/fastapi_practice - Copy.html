@@ -1,0 +1,151 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <title>FastAPI Practice Page</title>
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            padding: 30px;
+            max-width: 800px;
+            margin: auto;
+        }
+        section {
+            border: 1px solid #ddd;
+            padding: 20px;
+            margin-bottom: 30px;
+            border-radius: 8px;
+        }
+        h2 {
+            margin-top: 0;
+        }
+        label {
+            display: block;
+            margin-top: 10px;
+        }
+        input, select, button {
+            margin-top: 5px;
+            padding: 8px;
+            width: 100%;
+        }
+        button {
+            margin-top: 15px;
+            cursor: pointer;
+        }
+    </style>
+</head>
+<body>
+
+<h1>FastAPI Full Practice Page</h1>
+
+<section>
+    <h2>1️⃣ Login (Form Data)</h2>
+    <form method="post" action="/login">
+        <label>
+            Username
+            <input type="text" name="username" required>
+        </label>
+
+        <label>
+            Password
+            <input type="password" name="password" required>
+        </label>
+
+        <button type="submit">Login</button>
+    </form>
+</section>
+
+<section>
+    <h2>2️⃣ Create Post (Form + File Upload + Background Task)</h2>
+    <form method="post" action="/upload" enctype="multipart/form-data">
+
+        <label>
+            Post Title
+            <input type="text" name="title" required>
+        </label>
+
+        <label>
+            Post Content
+            <input type="text" name="content" required>
+        </label>
+
+        <label>
+            Category
+            <input type="text" name="category">
+        </label>
+
+        <label>
+            Upload Image
+            <input type="file" name="image">
+        </label>
+
+        <button type="submit">Create Post</button>
+    </form>
+</section>
+
+<section>
+    <h2>3️⃣ View Posts (Pagination + Filtering + Sorting)</h2>
+
+    <form method="get" action="http://127.0.0.1:8000/posts">
+
+        <label>
+            Search Title
+            <input type="text" name="search" placeholder="e.g. FastAPI">
+        </label>
+
+        <label>
+            Page
+            <input type="number" name="page" value="1" min="1">
+        </label>
+
+        <label>
+            Limit (items per page)
+            <input type="number" name="limit" value="5" min="1">
+        </label>
+
+        <label>
+            Sort By
+            <select name="sort">
+                <option value="created_at">Created At</option>
+                <option value="title">Title</option>
+            </select>
+        </label>
+
+        <label>
+            Order
+            <select name="order">
+                <option value="desc">Descending</option>
+                <option value="asc">Ascending</option>
+            </select>
+        </label>
+
+        <button type="submit">Fetch Posts</button>
+    </form>
+</section>
+
+<section>
+    <h2>4️⃣ Download Uploaded Image</h2>
+
+    <form method="get" action="">
+        <label>
+            Post ID
+            <input type="number" id="postId" placeholder="Enter post ID">
+        </label>
+
+        <button type="button" onclick="downloadImage()">Download Image</button>
+    </form>
+</section>
+
+<script>
+    function downloadImage() {
+        const postId = document.getElementById("postId").value;
+        if (!postId) {
+            alert("Please enter a post ID");
+            return;
+        }
+        window.location.href = `http://127.0.0.1:8000/download/${postId}`;
+    }
+</script>
+
+</body>
+</html>

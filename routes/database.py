@@ -1,0 +1,30 @@
+from sqlalchemy import create_engine
+from sqlalchemy.orm import declarative_base, sessionmaker
+
+#--------Postgress Connection--------
+DATABASE_URL_PG = "postgresql://postgres:Omonik3.@localhost:5432/UserDetails"
+engine_pg = create_engine(DATABASE_URL_PG)
+sessionLocal_pg = sessionmaker(autocommit=False, autoflush=False, bind=engine_pg)
+Base_pg = declarative_base()
+
+def get_db_pg():
+    db = sessionLocal_pg()
+    try:
+        yield db
+    finally:
+        db.close()
+
+
+#--------SQLite Connection---------
+
+DATABASE_URL_SQLITE = "sqlite:///posts.db"
+engine_sqlite = create_engine(DATABASE_URL_SQLITE, connect_args={"check_same_thread": False})
+sessionLocal_sqlite = sessionmaker(autocommit=False, autoflush=False, bind=engine_sqlite)
+Base_sqlite = declarative_base()
+
+def get_db_sqlite():
+    db = sessionLocal_sqlite()
+    try:
+        yield db
+    finally:
+        db.close()
