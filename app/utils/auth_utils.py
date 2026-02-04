@@ -29,11 +29,11 @@ def create_access_token(data: dict, expires_delta: timedelta = None):
     return encode_jtw
 
 def decode_access_token(request: Request = None):
-    token = request.cookies.get("session_token")
+    token = request.cookies.get("access_token")
 
     try:
         payload = jwt.decode(token, settings.secret_key, algorithms=[settings.algorithm])
-        username = payload.get("subs")
+        username = payload.get("sub")
     except JWTError:
         return None
     return payload
@@ -47,8 +47,9 @@ def create_refresh_token(data: dict, expires_delta: timedelta = None):
 
 def decode_refresh_token(token: str):
     try:
-        payload = jwt.decode(token, settings.secret_key, algorithms=settings.algorithm)
-        username = payload.get("sub")
+        payload = jwt.decode(token, settings.secret_key, algorithms=[settings.algorithm])
+        # username = payload.get("sub")
+        return payload
     except JWTError:
         return None
     
@@ -56,10 +57,10 @@ def get_current_user(access_token: str = Cookie(None)):
     if access_token is None:
         raise HTTPException(status_code=401, detail="Access token missing")
     try:
-        payload = jwt.decode(access_token, "secret_key", algorithms=["HS256"])
-        # username: str = payload.get("sub")
-        # if username is None:
-        #     raise HTTPException(status_code=401, detail="Invalid token")
+        payload = jwt.decode(access_token, settings.secret_key, algorithms=["HS256"])
+        username: str = payload.get("sub")
+        if username is None:
+            raise HTTPException(status_code=401, detail="Invalid token")
     except JWTError:
         raise HTTPException(status_code=401, detail="Invalid token")
     

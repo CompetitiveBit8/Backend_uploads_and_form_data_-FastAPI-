@@ -1,5 +1,5 @@
 from fastapi import Depends, FastAPI, Response, Request, Form, UploadFile, File, BackgroundTasks, Query, HTTPException, Cookie
-from fastapi.responses import HTMLResponse
+from fastapi.responses import HTMLResponse, FileResponse
 from fastapi.templating import Jinja2Templates
 from app.db.database import get_db_sqlite_old, sessionLocal_pg, sessionLocal_sqlite,  Base_sqlite, Base_pg, engine_sqlite, Base_sqlite_old, engine_sqlite_old, engine_pg, get_db_pg, get_db_sqlite, get_db_sqlite_old, Base_sqlite_old
 from app.models.models import UserDetails, posts_old, posts
@@ -78,6 +78,7 @@ async def login(response: Response, db: Session = Depends(get_db_pg), username=F
     #set httpOnly cookies
     response.set_cookie(key="access_token", value=access_token, httponly=True)
     response.set_cookie(key="refresh_token", value=refresh_token, httponly=True)
+    print("/n/n Login Successful /n/n")
     return {"message": "Login successful"}
 
 @app.post("/refresh-token")
@@ -86,13 +87,15 @@ async def refresh_token(response: Response, refresh_token: str = Cookie(None)):
         raise HTTPException(status_code=401, detail="Refresh token missing")
     
     payload = decode_refresh_token(refresh_token)
-    if payload is None:
+    if payload is None: 
         raise HTTPException(status_code=401, detail="Invalid refresh token")
 
     username = payload.get("sub")
     new_access_token = create_access_token({"sub": username})
 
     response.set_cookie(key="access_token", value=new_access_token, httponly=True)
+
+    print("Token is refreshed")
 
     return {"message": "Access token refreshed"}
 
@@ -160,5 +163,14 @@ async def read_post(db: Session = Depends(get_db_sqlite_old), sort: str = Query(
 
 #Download Uploaded Image
 @app.get("/image/{image_id}")
-async def download_image():
-    pass
+async def download_image(filename: str):
+    filepath = os.path.join(Upload_dir, filename)
+
+    if not os.path.exists(Upload_dir, filepath):
+            raise HTTPException(status_code=404, detail="Image not found")
+    
+    return FileResponse(
+        path=filepath,
+        media_type="application/octet-stream",
+        filename=filename
+    )

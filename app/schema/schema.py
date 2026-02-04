@@ -9,3 +9,4 @@ class PostSchema(BaseModel):
     content: str
     author: str
     fileName: str
+    post: str
