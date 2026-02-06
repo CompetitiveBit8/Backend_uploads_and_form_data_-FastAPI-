@@ -23,7 +23,7 @@ def verify_password(plain_password, hashed_password):
 
 def create_access_token(data: dict, expires_delta: timedelta = None):
     to_encode = data.copy()
-    expire = datetime.utcnow() + (expires_delta if expires_delta else timedelta(minutes=settings.access_token_expire_time))
+    expire = datetime.utcnow() + (expires_delta if expires_delta else timedelta(minutes=1))
     to_encode.update({"exp": expire})
     encode_jtw = jwt.encode(to_encode, settings.secret_key, algorithm=settings.algorithm)
     return encode_jtw
@@ -40,7 +40,7 @@ def decode_access_token(request: Request = None):
 
 def create_refresh_token(data: dict, expires_delta: timedelta = None):
     to_encode = data.copy()
-    expire = datetime.utcnow() + (expires_delta if expires_delta else timedelta(days=settings.refresh_token_expire_days))
+    expire = datetime.utcnow() + (expires_delta if expires_delta else timedelta(minutes=5))
     to_encode.update({"exp": expire})
     encode_jtw = jwt.encode(to_encode, settings.secret_key, algorithm=settings.algorithm)
     return encode_jtw
