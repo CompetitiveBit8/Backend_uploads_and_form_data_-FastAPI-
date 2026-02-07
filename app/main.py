@@ -1,8 +1,8 @@
 from fastapi import Depends, FastAPI, Response, Request, Form, UploadFile, File, BackgroundTasks, Query, HTTPException, Cookie
 from fastapi.responses import HTMLResponse, FileResponse
 from fastapi.templating import Jinja2Templates
-from app.db.database import get_db_sqlite_old, sessionLocal, sessionLocal_sqlite,  Base_sqlite, Base, engine_sqlite, Base_sqlite_old, engine_sqlite_old, engine, get_db, get_db_sqlite, get_db_sqlite_old, Base_sqlite_old
-from app.models.models import UserDetails, posts_old, posts, images
+from app.db.database import get_db_sqlite_old, sessionLocal, Base, Base_sqlite_old, engine_sqlite_old, engine, get_db, get_db_sqlite_old, Base_sqlite_old
+from app.models.models import UserDetails, posts_old, images
 from app.schema.schema import UserLogin, PostSchema, ImageSchema
 from sqlalchemy.orm import Session
 from fastapi.staticfiles import StaticFiles
@@ -17,7 +17,7 @@ import requests
 
 
 #creating tables
-Base_sqlite.metadata.create_all(bind=engine_sqlite)
+# Base_sqlite.metadata.create_all(bind=engine_sqlite)
 Base.metadata.create_all(bind=engine)
 Base_sqlite_old.metadata.create_all(bind=engine_sqlite_old)
 
@@ -81,13 +81,14 @@ async def login(response: Response, db: Session = Depends(get_db), username=Form
     #set httpOnly cookies
     response.set_cookie(key="access_token", value=access_token, httponly=True)
     response.set_cookie(key="refresh_token", value=refresh_token, httponly=True)
-    print("/n/n Login Successful /n/n")
+    print("\n\n Login Successful \n\n")
     return {"message": "Login successful"}
 
 
 
 @app.post("/refresh")
-async def refresh_token(response: Response, refresh_token: str = Cookie(None)):
+async def refresh_token(response: Response, refresh_token: Request):
+    print("Access token refreshed")
 
     if refresh_token is None:
         raise HTTPException(status_code=401, detail="Refresh token missing")
@@ -118,14 +119,6 @@ async def refresh_token(response: Response, refresh_token: str = Cookie(None)):
         samesite="lax"
     )
     
-    response.set_cookie(
-        key="refresh_token", 
-        value=new_refresh_token, 
-        httponly=True,
-        secure=False,  # Set to True in production with HTTPS
-        samesite="lax"
-    )
-
     return {"message": "Access token refreshed"}
 
 
@@ -133,31 +126,36 @@ async def refresh_token(response: Response, refresh_token: str = Cookie(None)):
 #----------------------------DONE----------------------------
 #Create Post (Form + File Upload + Background Task)
 @app.post("/upload")
-async def upload_file(db: Session = Depends(get_db_sqlite),  
+async def upload_file(db: Session = Depends(get_db_sqlite_old),  
                       title: str = Form(...), content: str = Form(...), 
                        image: UploadFile = File(...), author: str = Form(...),
-                    _: str = Depends(get_current_user)):
+                    ):
      
     file_location = os.path.join(Upload_dir, image.filename)
     with open(file_location, "wb") as f:
         shutil.copyfileobj(image.file, f)
 
 
-    db_image = images(
-        file_path=file_location,
-        file_name=image.filename,
-        file_type=image.content_type
-    )
-
     post_information = PostSchema(
         title = title,
         content = content,
         author = author,
     )
+    db_posts = posts_old(**post_information.model_dump())
 
-    db_posts = posts(**post_information.model_dump())
-    db.add_all([db_posts, db_image])
+    db.add(db_posts)
     db.commit()
+    db.refresh(db_posts)
+
+    db_image = images(
+        # id= posts_old.id,
+        file_path=file_location,
+        file_name=image.filename,
+        file_type=image.content_type
+    )
+    db.add(db_image)
+    db.commit()
+    db.refresh(db_image)
     return {"messages" : "post updated"}
 
 
@@ -192,7 +190,7 @@ async def read_post(db: Session = Depends(get_db_sqlite_old), sort: str = Query(
 
 
 @app.get("/image/{post_id}/download")
-async def download_image(post_id: int, db: Session = Depends(get_db_sqlite),
+async def download_image(post_id: int, db: Session = Depends(get_db_sqlite_old),
                          _: str = Depends(get_current_user)):
 
     path_query = (

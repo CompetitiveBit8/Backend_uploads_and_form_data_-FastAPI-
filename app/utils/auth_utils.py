@@ -23,13 +23,13 @@ def verify_password(plain_password, hashed_password):
 
 def create_access_token(data: dict, expires_delta: timedelta = None):
     to_encode = data.copy()
-    expire = datetime.utcnow() + (expires_delta if expires_delta else timedelta(minutes=1))
+    expire = datetime.utcnow() + (expires_delta if expires_delta else timedelta(minutes=settings.access_token_expire_time))
     to_encode.update({"exp": expire})
     encode_jtw = jwt.encode(to_encode, settings.secret_key, algorithm=settings.algorithm)
     return encode_jtw
 
 def decode_access_token(request: Request = None):
-    token = request.cookies.get("access_token")
+    token = request.cookies.get("refresh_token")
 
     try:
         payload = jwt.decode(token, settings.secret_key, algorithms=[settings.algorithm])
@@ -40,12 +40,14 @@ def decode_access_token(request: Request = None):
 
 def create_refresh_token(data: dict, expires_delta: timedelta = None):
     to_encode = data.copy()
-    expire = datetime.utcnow() + (expires_delta if expires_delta else timedelta(minutes=settings.access_token_expire_time))
+    expire = datetime.utcnow() + (expires_delta if expires_delta else timedelta(minutes=settings.refresh_token_expire_days))
     to_encode.update({"exp": expire})
     encode_jtw = jwt.encode(to_encode, settings.secret_key, algorithm=settings.algorithm)
     return encode_jtw
 
-def decode_refresh_token(token: str):
+def decode_refresh_token(request: Request):
+    token = request.cookies.get("access_token")
+
     try:
         payload = jwt.decode(token, settings.secret_key, algorithms=[settings.algorithm])
         # username = payload.get("sub")

@@ -1,5 +1,5 @@
 from sqlalchemy import Column, Integer, String, ForeignKey
-from app.db.database import Base, Base_sqlite
+from app.db.database import Base, Base_sqlite_old
 from sqlalchemy.orm import relationship
 
 class UserDetails(Base):
@@ -10,33 +10,24 @@ class UserDetails(Base):
     password = Column(String, index=True)
 
 
-class posts_old(Base):
+class posts_old(Base_sqlite_old):
     __tablename__ = "posts"
 
-    id = Column(Integer, primary_key=True, index=True)
+    id = Column(Integer, primary_key=True, unique=True, index=True)
     title = Column(String, index=True)
     content = Column(String, index=True)
     author = Column(String, index=True)
 
-
-class posts(Base_sqlite):
-    __tablename__ = "posts"
-
-    id = Column(Integer, primary_key=True, index=True)
-    title = Column(String, index=True)
-    content = Column(String, index=True)
-    author = Column(String, index=True)
-
-    # image_name = relationship("images", uselist=False, cascade="all, delete-orphan")
+    image = relationship("images", back_populates="post")
 
 
 
-class images(Base_sqlite):
+class images(Base_sqlite_old):
     __tablename__ = "image_info"
 
-    id = Column(Integer, primary_key=True)
+    id = Column(Integer, ForeignKey(posts_old.id), primary_key=True)
     file_path = Column(String, index=True)
     file_name = Column(String, index=True)
     file_type = Column(String, index=True)
 
-    # posts = relationship("posts", back_populates="image_name") 
+    post = relationship("posts_old", back_populates="image") 

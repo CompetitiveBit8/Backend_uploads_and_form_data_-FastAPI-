@@ -18,17 +18,17 @@ def get_db():
 
 #--------SQLite Connection---------
 
-DATABASE_URL_SQLITE = settings.sq_link
-engine_sqlite = create_engine(DATABASE_URL_SQLITE, connect_args={"check_same_thread": False})
-sessionLocal_sqlite = sessionmaker(autocommit=False, autoflush=False, bind=engine_sqlite)
-Base_sqlite = declarative_base()
+# DATABASE_URL_SQLITE = settings.sq_link
+# engine_sqlite = create_engine(DATABASE_URL_SQLITE, connect_args={"check_same_thread": False})
+# sessionLocal_sqlite = sessionmaker(autocommit=False, autoflush=False, bind=engine_sqlite)
+# Base_sqlite = declarative_base()
 
-def get_db_sqlite():
-    db = sessionLocal_sqlite()
-    try:
-        yield db
-    finally:
-        db.close()
+# def get_db_sqlite():
+#     db = sessionLocal_sqlite()
+#     try:
+#         yield db
+#     finally:
+#         db.close()
 
 #----------New SQLite Connection----------
 
