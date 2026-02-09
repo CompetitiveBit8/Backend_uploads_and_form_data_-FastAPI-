@@ -4,7 +4,8 @@
       "src": "app/main.py",
       "use": "@vercel/python",
       "config": {
-        "installCommand": "pip install --upgrade pip setuptools wheel && pip install --no-deps --no-cache-dir -r requirements.lock"
+        "pythonVersion": "3.14",
+        "installCommand": "pip install --no-cache-dir -r requirements.txt"
       }
     }
   ],
