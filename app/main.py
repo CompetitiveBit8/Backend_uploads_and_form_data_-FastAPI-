@@ -44,6 +44,14 @@ os.makedirs(Upload_dir,exist_ok=True)
 async def read_index(request: Request):
     return templates.TemplateResponse("fastapi_practice.html", {"request": request, "title": "FastAPI Challenge"})
 
+@app.head("/")
+async def head_root():
+    return Response(status_code=200)
+
+@app.get("/health")
+async def health():
+    return {"status":"healthy"}
+
 #signupFOrm Data
 @app.post("/signup")
 async def signup(username=Form(...), password=Form(...), db: Session = Depends(get_db)):
